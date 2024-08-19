@@ -1,8 +1,27 @@
-// index.js
 const fastify = require('fastify')({ logger: true });
+//const fetch = require('node-fetch');
+const path = require("path");
+const db = require('./db');
+const usersModel = require('./models/usersModel_db');
+const ejs = require("ejs")
+const fastifyView = require("@fastify/view")
+
+fastify.register(fastifyView, {
+    engine: {
+      ejs
+    },
+    root: path.join(__dirname, 'views'), // Diretório onde seus arquivos .ejs estão localizados
+  });
+
+
+
+fastify.register(require('@fastify/formbody'));
+fastify.register(require('@fastify/cors'));
+
+  
 
 fastify.get('/', async (request, reply) => {
-    return { msg: 'Olá, mundo!' };
+    return reply.view("login.ejs");
 });
 
 const start = async () => {
