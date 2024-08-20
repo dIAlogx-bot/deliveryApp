@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #0046BE;
+            color: #ffffff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #0033A0 3px solid;
+        }
+        header h1 {
+            margin: 0;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .menu {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .menu a {
+            display: block;
+            padding: 10px;
+            background: #0046BE;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .menu a:hover {
+            background: #0033A0;
+        }
+        .submenu {
+            display: none;
+            margin-top: 10px;
+            margin-left: 20px;
+        }
+        .submenu a {
+            background: #0071e3;
+        }
+        .menu-item.active .submenu {
+            display: block;
+        }
+        .logout {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Bem-vindo, <%= user.nome %>!</h1>
+            <h1>Dashboard</h1>            
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="menu">
+            <div class="menu-item">
+                <a href="javascript:void(0);" onclick="toggleSubmenu('produtos')">Gerenciar Produtos</a>
+                <div id="produtos-submenu" class="submenu">
+                    <a href="/produtos/cadastrar">Cadastrar Produto</a>
+                    <a href="/produtos/editar">Editar Produto</a>
+                    <a href="/produtos/excluir">Excluir Produto</a>
+                </div>
+            </div>
+            <div class="menu-item">
+                <a href="javascript:void(0);" onclick="toggleSubmenu('usuarios')">Gerenciar Usuários</a>
+                <div id="usuarios-submenu" class="submenu">
+                    <a href="/usuarios/cadastrar">Cadastrar Usuário</a>
+                    <a href="/usuarios/editar">Editar Usuário</a>
+                    <a href="/usuarios/excluir">Excluir Usuário</a>
+                </div>
+            </div>
+            <a href="/pedidos/visualizar">Visualizar Pedidos</a>
+            <a href="javascript:void(0);" onclick="logout()" class="logout">Sair</a>
+        </div>
+    </div>
+
+    <script>
+        let activeMenu = null;
+
+        function toggleSubmenu(menuId) {
+            const submenu = document.getElementById(`${menuId}-submenu`);
+            const menuItem = submenu.parentElement;
+
+            if (activeMenu && activeMenu !== menuItem) {
+                activeMenu.classList.remove('active');
+            }
+
+            menuItem.classList.toggle('active');
+            activeMenu = menuItem.classList.contains('active') ? menuItem : null;
+        }
+
+        function logout() {
+            fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/'; // Redireciona para a página de login após o logout
+                } else {
+                    alert('Erro ao fazer logout');
+                }
+            }).catch(error => {
+                console.error('Erro ao se conectar com o servidor:', error);
+            });
+        }
+    </script>
+</body>
+</html>

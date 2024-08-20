@@ -124,10 +124,9 @@
                 });
 
                 if (response.ok) {
-                    window.location.href = '/'; // Redireciona para a página inicial ou painel
+                    window.location.href = '/dashboard'; // Redireciona para o dashboard após login bem-sucedido
                 } else {
-                    const errorData = await response.json();
-                    showMessage(`Erro ao fazer login: ${errorData.error}`, 'error');
+                    window.location.href = '/'; // Redireciona para a página de login em caso de erro                    
                 }
             } catch (error) {
                 showMessage('Erro ao conectar com o servidor', 'error');
