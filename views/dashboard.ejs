@@ -82,7 +82,8 @@
             <div class="menu-item">
                 <a href="javascript:void(0);" onclick="toggleSubmenu('produtos')">Gerenciar Produtos</a>
                 <div id="produtos-submenu" class="submenu">
-                    <a href="/produtos/cadastrar">Cadastrar Produto</a>
+                    <a href="/products">Listar Produtos</a>
+                    <a href="/addProduct">Cadastrar Produto</a>
                     <a href="/produtos/editar">Editar Produto</a>
                     <a href="/produtos/excluir">Excluir Produto</a>
                 </div>
@@ -116,21 +117,31 @@
         }
 
         function logout() {
-            fetch('/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(response => {
-                if (response.ok) {
-                    window.location.href = '/'; // Redireciona para a página de login após o logout
-                } else {
-                    alert('Erro ao fazer logout');
-                }
-            }).catch(error => {
-                console.error('Erro ao se conectar com o servidor:', error);
-            });
+    fetch('/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}), // Adicionando um corpo vazio
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        console.log('Status da resposta:', response.status);
+        if (response.ok) {
+            console.log('Logout bem-sucedido, redirecionando...');
+            window.location.href = '/';
+        } else {
+            console.error('Erro ao fazer logout. Status:', response.status);
+            return response.text();
         }
+    })
+    .then(text => {
+        if (text) console.error('Corpo da resposta de erro:', text);
+    })
+    .catch(error => {
+        console.error('Erro ao se conectar com o servidor:', error);
+    });
+}
     </script>
 </body>
 </html>
