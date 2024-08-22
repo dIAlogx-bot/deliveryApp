@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Produtos</title>
+    <link rel="stylesheet" href="/css/inicio.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,11 +58,13 @@
             font-size: 1.2em;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body>
     <header>
         <div class="container">
             <h1>Lista de Produtos</h1>
+            <a href="/dashboard" class="inicio-btn">Início</a>
         </div>
     </header>
 
@@ -101,7 +104,7 @@
 
         // Função para atualizar um produto
         function updateProduct(id) {
-            window.location.href = `/update-product/${id}`;
+            window.location.href = `/updateProduct/${id}`;
         }
 
         // Função para excluir um produto
@@ -128,5 +131,21 @@
         // Chama a função quando a página carrega
         window.onload = fetchAndDisplayProducts;
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('alert') === 'access-denied') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Acesso Negado',
+                    text: 'Apenas administradores podem acessar esta página.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        document.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
+    
 </body>
 </html>

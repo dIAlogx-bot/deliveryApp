@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizar Produto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0046BE;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            background: #0046BE;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0033A0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Atualizar Produto</h1>
+        <form id="updateProductForm">
+            <label for="nome">Nome do Produto:</label>
+            <input type="text" id="nome" name="nome" value="<%= product.nome %>" required>
+
+            <label for="descricao">Descrição:</label>
+            <input type="text" id="descricao" name="descricao" value="<%= product.descricao %>">
+
+            <label for="preco">Preço:</label>
+            <input type="number" step="0.01" id="preco" name="preco" value="<%= product.preco %>" required>
+
+            <label for="disponibilidade">Disponibilidade:</label>
+            <select id="disponibilidade" name="disponibilidade" required>
+                <option value="1" <%= product.disponibilidade === 1 ? 'selected' : '' %>>Sim</option>
+                <option value="0" <%= product.disponibilidade === 0 ? 'selected' : '' %>>Não</option>
+            </select>
+
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('updateProductForm').onsubmit = async function(event) {
+            event.preventDefault();
+            
+            const id = "<%= product.id %>";
+            const nome = document.getElementById('nome').value;
+            const descricao = document.getElementById('descricao').value;
+            const preco = document.getElementById('preco').value;
+            const disponibilidade = document.getElementById('disponibilidade').value;
+
+            try {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nome, descricao, preco, disponibilidade })
+                });
+
+                if (response.ok) {
+                    alert('Produto atualizado com sucesso!');
+                    window.location.href = '/products';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro ao atualizar produto: ${errorData.error}`);
+                }
+            } catch (error) {
+                alert('Erro ao conectar com o servidor');
+            }
+        }
+    </script>
+</body>
+</html>

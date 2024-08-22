@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Pedido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #0046BE;
+            color: #ffffff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #0033A0 3px solid;
+        }
+        header h1 {
+            margin: 0;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .menu {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #0046BE;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #0046BE;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0033A0;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .produto-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .quantidade-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .quantidade-container button {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        .quantidade-container input {
+            width: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Novo Pedido</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="menu">
+            <form id="novoPedidoForm">
+                <div class="form-group">
+                    <label for="cliente">Cliente:</label>
+                    <select id="cliente" name="cliente" required>
+                        <option value="">Selecione o cliente</option>
+                        <!-- Aqui você irá popular a lista de clientes -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Produtos:</label>
+                    <div id="produtos-container">
+                        <!-- Os produtos serão adicionados aqui dinamicamente -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Valor Total:</label>
+                    <div id="total-value">R$ 0,00</div>
+                </div>
+                <button type="submit">Criar Pedido</button>
+            </form>
+            <div id="message" class="message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const produtosContainer = document.getElementById('produtos-container');
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const products = await response.json();
+
+                products.forEach(product => {
+                    if (product.disponibilidade) {
+                        const produtoItem = document.createElement('div');
+                        produtoItem.classList.add('produto-item');
+
+                        const produtoNome = document.createElement('h3');
+                        produtoNome.textContent = product.nome;
+
+                        const produtoDescricao = document.createElement('p');
+                        produtoDescricao.textContent = product.descricao;
+
+                        const produtoPreco = document.createElement('p');
+                        produtoPreco.textContent = `R$ ${product.preco.toFixed(2)}`;
+                        produtoPreco.classList.add('produto-preco');
+
+                        const quantidadeContainer = document.createElement('div');
+                        quantidadeContainer.classList.add('quantidade-container');
+
+                        const diminuirBtn = document.createElement('button');
+                        diminuirBtn.textContent = '-';
+                        diminuirBtn.classList.add('diminuir-produto');
+
+                        const quantidadeInput = document.createElement('input');
+                        quantidadeInput.type = 'number';
+                        quantidadeInput.name = `quantidade-${product.id}`;
+                        quantidadeInput.value = 0;
+                        quantidadeInput.min = 0;
+                        quantidadeInput.classList.add('produto-quantidade');
+                        quantidadeInput.dataset.preco = product.preco; // Adiciona o preço ao dataset
+
+                        const aumentarBtn = document.createElement('button');
+                        aumentarBtn.textContent = '+';
+                        aumentarBtn.classList.add('aumentar-produto');
+
+                        quantidadeContainer.appendChild(diminuirBtn);
+                        quantidadeContainer.appendChild(quantidadeInput);
+                        quantidadeContainer.appendChild(aumentarBtn);
+
+                        produtoItem.appendChild(produtoNome);
+                        produtoItem.appendChild(produtoDescricao);
+                        produtoItem.appendChild(produtoPreco);
+                        produtoItem.appendChild(quantidadeContainer);
+
+                        produtosContainer.appendChild(produtoItem);
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao obter produtos:', error);
+                showMessage('Erro ao obter a lista de produtos', 'error');
+            }
+        }
+
+        function updateTotalValue() {
+            const produtos = document.querySelectorAll('.produto-item');
+            let totalValue = 0;
+
+            produtos.forEach(produto => {
+                const quantidadeInput = produto.querySelector('.produto-quantidade');
+                const produtoPreco = parseFloat(quantidadeInput.dataset.preco); // Obtém o preço do dataset
+                const quantidade = parseInt(quantidadeInput.value);
+
+                if (!isNaN(produtoPreco) && !isNaN(quantidade)) {
+                    totalValue += quantidade * produtoPreco;
+                }
+            });
+
+            const totalValueElement = document.getElementById('total-value');
+            totalValueElement.textContent = `R$ ${totalValue.toFixed(2)}`;
+        }
+
+        produtosContainer.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            if (event.target.classList.contains('diminuir-produto')) {
+                const quantidadeInput = event.target.nextElementSibling;
+                if (parseInt(quantidadeInput.value) > 0) {
+                    quantidadeInput.value = parseInt(quantidadeInput.value) - 1;
+                }
+            } else if (event.target.classList.contains('aumentar-produto')) {
+                const quantidadeInput = event.target.previousElementSibling;
+                quantidadeInput.value = parseInt(quantidadeInput.value) + 1;
+            }
+
+            updateTotalValue();
+        });
+
+        produtosContainer.addEventListener('input', updateTotalValue);
+
+        async function loadClients() {
+            try {
+                const response = await fetch('/api/clients');
+                const clients = await response.json();
+
+                const clienteSelect = document.getElementById('cliente');
+                clienteSelect.innerHTML = '<option value="">Selecione o cliente</option>';
+
+                clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = `${client.first_name} ${client.last_name} - ${client.phone}`;
+                    clienteSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao obter clientes:', error);
+                showMessage('Erro ao obter a lista de clientes', 'error');
+            }
+        }
+
+        async function createNewOrder(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('novoPedidoForm');
+            const formData = new FormData(form);
+
+            const cliente = formData.get('cliente');
+            const produtos = [];
+            const orderStatus = 'Pedido Aberto';
+
+            form.querySelectorAll('.produto-quantidade').forEach(input => {
+                const produtoId = input.name.split('-')[1];
+                const quantidade = parseInt(input.value);
+                
+                if (quantidade > 0) {
+                    const preco = parseFloat(input.dataset.preco); // Certifique-se de que data-preco está presente e correto
+
+                    if (!isNaN(preco) && !isNaN(quantidade)) {
+                        produtos.push({ id: produtoId, quantidade: quantidade, preco: preco });
+                    } else {
+                        console.error(`Preço ou quantidade inválida para o produto ID ${produtoId}: Preço = ${preco}, Quantidade = ${quantidade}`);
+                    }
+                }
+            });
+
+            if (produtos.length === 0) {
+                showMessage('Selecione pelo menos um produto.', 'error');
+                return;
+            }
+
+            console.log('Cliente:', cliente);
+            console.log('Produtos:', produtos);
+            console.log('Status do Pedido', orderStatus)
+
+            const orderData = {
+                cliente: cliente,
+                produtos: produtos,
+                orderStatus: 'Pedido Aberto'
+            };
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                console.log('Response status:', response.status);
+
+                if (response.ok) {
+                    showMessage('Pedido criado com sucesso!', 'success');
+                    form.reset();
+                    // Após resetar o formulário, redefine os campos de quantidade para 0
+                    form.querySelectorAll('.produto-quantidade').forEach(input => {
+                        input.value = 0;
+                    });
+                    updateTotalValue(); // Reseta o valor total após criar o pedido
+                } else {
+                    const errorText = await response.text();
+                    console.error('Erro ao criar o pedido:', errorText);
+                    showMessage('Erro ao criar o pedido.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao criar o pedido:', error);
+                showMessage('Erro ao criar o pedido.', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+
+        document.getElementById('novoPedidoForm').addEventListener('submit', createNewOrder);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            loadClients();
+            updateTotalValue(); // Inicialize o valor total ao carregar a página
+        });
+    </script>
+</body>
+</html>

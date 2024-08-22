@@ -2,9 +2,9 @@ const db = require('../db');
 
 
 
-function getAllUsers() {
+function getAllClients() {
     return new Promise((resolve, reject) => {
-      const query = `SELECT * FROM users`;
+      const query = `SELECT * FROM clients`;
       db.all(query, [], (err, rows) => {
         if (err) {
           reject(err);
@@ -15,6 +15,8 @@ function getAllUsers() {
     });
   }
 
-  module.exports = {
-    getAllUsers    
+
+
+module.exports = {
+    getAllClients    
   };

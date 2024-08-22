@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos Abertos</title>
+    <style>
+        /* Estilos aqui */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pedidos Abertos</h1>
+        <div id="pedidos-container">
+            <!-- Os pedidos serão carregados aqui -->
+        </div>
+    </div>
+
+    <script>
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders/open');
+                const orders = await response.json();
+
+                const pedidosContainer = document.getElementById('pedidos-container');
+                pedidosContainer.innerHTML = '';
+
+                orders.forEach(order => {
+                    const orderItem = document.createElement('div');
+                    orderItem.classList.add('pedido-item');
+
+                    const orderDetails = `
+                        <h3>Pedido #${order.id}</h3>
+                        <p>Cliente: ${order.clienteNome} - ${order.clienteTelefone}</p>
+                        <p>Itens: ${order.itens.map(item => item.nome).join(', ')}</p>
+                        <p>Valor Total: R$ ${order.totalValue.toFixed(2)}</p>
+                        <label>Status:</label>
+                        <select data-order-id="${order.id}" class="order-status">
+                            <option value="Pedido Aberto" ${order.status === 'Pedido Aberto' ? 'selected' : ''}>Pedido Aberto</option>
+                            <option value="Pedido em Produção" ${order.status === 'Pedido em Produção' ? 'selected' : ''}>Pedido em Produção</option>
+                            <option value="Saiu para Entrega" ${order.status === 'Saiu para Entrega' ? 'selected' : ''}>Saiu para Entrega</option>
+                            <option value="Pedido Concluído" ${order.status === 'Pedido Concluído' ? 'selected' : ''}>Pedido Concluído</option>
+                        </select>
+                    `;
+
+                    orderItem.innerHTML = orderDetails;
+                    pedidosContainer.appendChild(orderItem);
+                });
+
+                // Adiciona listener para mudar status
+                document.querySelectorAll('.order-status').forEach(select => {
+                    select.addEventListener('change', updateOrderStatus);
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar pedidos:', error);
+            }
+        }
+
+        async function updateOrderStatus(event) {
+            const select = event.target;
+            const orderId = select.dataset.orderId;
+            const newStatus = select.value;
+
+            try {
+                await fetch(`/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                alert('Status atualizado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html>

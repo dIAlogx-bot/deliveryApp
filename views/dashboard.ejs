@@ -68,12 +68,14 @@
             margin-top: 20px;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body>
     <header>
         <div class="container">
             <h1>Bem-vindo, <%= user.nome %>!</h1>
-            <h1>Dashboard</h1>            
+            <h1>Dashboard</h1> 
+
         </div>
     </header>
 
@@ -83,9 +85,7 @@
                 <a href="javascript:void(0);" onclick="toggleSubmenu('produtos')">Gerenciar Produtos</a>
                 <div id="produtos-submenu" class="submenu">
                     <a href="/products">Listar Produtos</a>
-                    <a href="/addProduct">Cadastrar Produto</a>
-                    <a href="/produtos/editar">Editar Produto</a>
-                    <a href="/produtos/excluir">Excluir Produto</a>
+                    <a href="/addProduct">Cadastrar Produto</a>                    
                 </div>
             </div>
             <div class="menu-item">
@@ -96,7 +96,13 @@
                     <a href="/usuarios/excluir">Excluir Usuário</a>
                 </div>
             </div>
-            <a href="/pedidos/visualizar">Visualizar Pedidos</a>
+            <div class="menu-item">
+                <a href="javascript:void(0);" onclick="toggleSubmenu('pedidos')">Pedidos</a>
+                <div id="pedidos-submenu" class="submenu">
+                    <a href="/newOrder">Criar Pedido</a>
+                    <a href="/openOrders">Listar Pedidos</a>                    
+                </div>
+            </div>
             <a href="javascript:void(0);" onclick="logout()" class="logout">Sair</a>
         </div>
     </div>
@@ -142,6 +148,29 @@
         console.error('Erro ao se conectar com o servidor:', error);
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('alert') === 'access-denied') {
+            const alertBox = document.getElementById('admin-alert');
+            alertBox.style.display = 'block'; // Torna o alerta visível
+        }
+    });
+
     </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('alert') === 'access-denied') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Acesso Negado',
+                text: 'Apenas administradores podem acessar esta página.',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+</script>
 </body>
 </html>
