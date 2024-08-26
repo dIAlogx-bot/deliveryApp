@@ -4,6 +4,7 @@ const path = require("path");
 const db = require('./db');
 const productsDb = require('./models/productsModel_db');
 const clientsDb = require('./models/clientsModel_db');
+const orderModel = require('./models/orderModels_db');
 const ejs = require("ejs")
 const fastifyView = require("@fastify/view")
 
@@ -221,7 +222,7 @@ fastify.get('/api/clients', async (request, reply) => {
 
   
   fastify.post('/api/orders', async (request, reply) => {
-    const { cliente, produtos, orderStatus } = request.body;
+    const { cliente, produtos } = request.body;
 
     if (!cliente || !produtos || !Array.isArray(produtos) || produtos.length === 0) {
         return reply.status(400).send({ error: 'Dados de entrada inválidos' });
@@ -246,38 +247,24 @@ fastify.get('/api/clients', async (request, reply) => {
         // Converter totalValue para string no formato adequado para DECIMAL
         totalValue = totalValue.toFixed(2);
 
-        // Insere o pedido na tabela 'orders'
-        const insertOrderQuery = `
-            INSERT INTO orders (client_id, total_value, order_status)
-            VALUES (?, ?, ?)
-        `;
-        const { lastID: orderId } = await new Promise((resolve, reject) => {
-            db.run(insertOrderQuery, [cliente, totalValue, orderStatus], function (err) {
-                if (err) {
-                    console.error('Erro ao inserir na tabela orders:', err.message);
-                    return reject(err);
-                }
-                resolve({ lastID: this.lastID });
-            });
-        });
+        // Dados do pedido para criação
+        const orderData = {
+            cliente_id: cliente,
+            total: totalValue,
+            status: 'Pedido Aberto', // Status inicial
+        };
 
-        // Insere os itens na tabela 'orders_items'
-        const insertOrderItemsQuery = `
-            INSERT INTO orders_items (order_id, product_id, quantity, price)
-            VALUES (?, ?, ?, ?)
-        `;
+        // Insere o pedido na tabela 'orders' usando a função createOrder
+        const orderId = await orderModel.createOrder(orderData);
 
+        // Insere os itens na tabela 'orders_items' usando a função createOrderItem
         for (const item of produtos) {
-            const preco = item.preco.toFixed(2); // Converter preco para string no formato adequado
-            await new Promise((resolve, reject) => {
-                db.run(insertOrderItemsQuery, [orderId, item.id, item.quantidade, preco], function (err) {
-                    if (err) {
-                        console.error('Erro ao inserir na tabela orders_items:', err.message);
-                        return reject(err);
-                    }
-                    resolve();
-                });
-            });
+            const itemData = {
+                product_id: item.id,
+                quantity: item.quantidade,
+                price: item.preco.toFixed(2), // Converter preco para string no formato adequado
+            };
+            await orderModel.createOrderItem(orderId, itemData);
         }
 
         reply.send({ success: true, orderId });
@@ -307,6 +294,35 @@ fastify.get('/openOrders', (request, reply) => {
 
     reply.view('/viewOrders.ejs', { user: request.session.user });
 });
+
+fastify.get('/api/orders/open', async (req, res) => {
+    try {
+        const orders = await db.all(`
+            SELECT o.id, o.total_value, o.status, c.nome AS clienteNome, c.telefone AS clienteTelefone
+            FROM orders o
+            JOIN clients c ON o.cliente_id = c.id
+            WHERE o.status != 'Pedido Concluído'
+        `);
+
+        const orderItemsPromises = orders.map(async (order) => {
+            const items = await db.all(
+                `SELECT p.nome FROM orders_items oi 
+                 JOIN products p ON oi.product_id = p.id 
+                 WHERE oi.order_id = ?`, 
+                [order.id]
+            );
+            return { ...order, itens: items };
+        });
+
+        const ordersWithItems = await Promise.all(orderItemsPromises);
+
+        res.send(ordersWithItems);
+    } catch (error) {
+        console.error('Erro ao buscar pedidos abertos:', error);
+        res.status(500).send({ error: 'Erro ao buscar pedidos abertos' });
+    }
+});
+
 
 async function start() {
     try {
