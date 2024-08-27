@@ -5,11 +5,11 @@ const db = require('../db');
 
 // Função para criar um novo pedido
 async function createOrder(orderData) {
-    const { cliente_id, total, status } = orderData;
+    const { cliente_id, total, observacao, status } = orderData;
     const result = await new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO orders (client_id, total_value, order_status) VALUES (?, ?, ?)`,
-            [cliente_id, total, status],
+            `INSERT INTO orders (client_id, total_value, order_status, note) VALUES (?, ?, ?, ?)`,
+            [cliente_id, total, status, observacao],
             function (err) {
                 if (err) {
                     return reject(err);
@@ -38,14 +38,51 @@ async function createOrderItem(orderId, itemData) {
     });
 }
 
-// Função para obter pedidos abertos
+// Função para buscar pedidos abertos
 async function getOpenOrders() {
-    return await db.all(
-        `SELECT orders.id, clients.first_name AS cliente_nome, clients.telefone, orders.total, orders.status 
-        FROM orders 
-        JOIN clients ON orders.client_id = clients.id 
-        WHERE orders.status = 'Pedido Aberto'`
-    );
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT o.id, o.client_id, o.total_value, o.order_status, c.first_name, c.phone,
+                   GROUP_CONCAT(p.nome || ' (Qtd: ' || oi.quantity || ')') AS itens
+            FROM orders o
+            JOIN clients c ON o.client_id = c.id
+            JOIN orders_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE o.order_status = 'Pedido Aberto'
+            GROUP BY o.id
+            ORDER BY o.id ASC
+        `;
+
+        db.all(query, [], (err, rows) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(rows);
+        });
+    });
+}
+
+// Função para buscar Todos pedidos difernte de Pedido Concluído
+async function getAllOrders() {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT o.id, o.client_id, o.total_value, o.order_status, o.note, c.first_name, c.last_name, c.phone,
+                   GROUP_CONCAT(p.nome || ' (Qtd: ' || oi.quantity || ')') AS itens
+            FROM orders o
+            JOIN clients c ON o.client_id = c.id
+            JOIN orders_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id            
+            GROUP BY o.id
+            ORDER BY o.id ASC
+        `;
+
+        db.all(query, [], (err, rows) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(rows);
+        });
+    });
 }
 
 // Função para obter um pedido pelo ID
@@ -56,13 +93,17 @@ async function getOrderById(id) {
     );
 }
 
-// Função para atualizar o status de um pedido
-async function updateOrderStatus(id, status) {
-    const result = await db.run(
-        `UPDATE orders SET status = ? WHERE id = ?`,
-        [status, id]
-    );
-    return result.changes; // Retorna o número de linhas afetadas
+// Função para atualizar o status do pedido
+async function updateOrderStatus(orderId, status) {
+    return new Promise((resolve, reject) => {
+        const query = `UPDATE orders SET order_status = ? WHERE id = ?`;
+        db.run(query, [status, orderId], function (err) {
+            if (err) {
+                return reject(err);
+            }
+            resolve({ updated: this.changes });
+        });
+    });
 }
 
 // Função para excluir um pedido
@@ -81,6 +122,7 @@ module.exports = {
     createOrder,
     createOrderItem,
     getOpenOrders,
+    getAllOrders,
     getOrderById,
     updateOrderStatus,
     deleteOrder,

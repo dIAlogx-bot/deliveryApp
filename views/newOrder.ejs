@@ -137,6 +137,10 @@
                     <label>Valor Total:</label>
                     <div id="total-value">R$ 0,00</div>
                 </div>
+                <div class="form-group">
+                    <label for="observacao">Observação:</label>
+                    <textarea id="observacao" name="observacao" rows="4" placeholder="Insira alguma observação"></textarea>
+                </div>               
                 <button type="submit">Criar Pedido</button>
             </form>
             <div id="message" class="message" style="display: none;"></div>
@@ -266,6 +270,7 @@
             const formData = new FormData(form);
 
             const cliente = formData.get('cliente');
+            const observacao = formData.get('observacao')
             const produtos = [];
             const orderStatus = 'Pedido Aberto';
 
@@ -291,11 +296,17 @@
 
             console.log('Cliente:', cliente);
             console.log('Produtos:', produtos);
+            console.log('Observação:', observacao)
             console.log('Status do Pedido', orderStatus)
+
+            if (observacao == null) {
+                observacao = ('');
+            }
 
             const orderData = {
                 cliente: cliente,
                 produtos: produtos,
+                observacao: observacao,
                 orderStatus: 'Pedido Aberto'
             };
 

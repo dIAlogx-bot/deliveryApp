@@ -222,7 +222,7 @@ fastify.get('/api/clients', async (request, reply) => {
 
   
   fastify.post('/api/orders', async (request, reply) => {
-    const { cliente, produtos } = request.body;
+    const { cliente, produtos, observacao } = request.body;
 
     if (!cliente || !produtos || !Array.isArray(produtos) || produtos.length === 0) {
         return reply.status(400).send({ error: 'Dados de entrada inválidos' });
@@ -251,6 +251,7 @@ fastify.get('/api/clients', async (request, reply) => {
         const orderData = {
             cliente_id: cliente,
             total: totalValue,
+            observacao : observacao,
             status: 'Pedido Aberto', // Status inicial
         };
 
@@ -295,34 +296,41 @@ fastify.get('/openOrders', (request, reply) => {
     reply.view('/viewOrders.ejs', { user: request.session.user });
 });
 
-fastify.get('/api/orders/open', async (req, res) => {
+fastify.get('/api/orders', async (request, reply) => {
     try {
-        const orders = await db.all(`
-            SELECT o.id, o.total_value, o.status, c.nome AS clienteNome, c.telefone AS clienteTelefone
-            FROM orders o
-            JOIN clients c ON o.cliente_id = c.id
-            WHERE o.status != 'Pedido Concluído'
-        `);
-
-        const orderItemsPromises = orders.map(async (order) => {
-            const items = await db.all(
-                `SELECT p.nome FROM orders_items oi 
-                 JOIN products p ON oi.product_id = p.id 
-                 WHERE oi.order_id = ?`, 
-                [order.id]
-            );
-            return { ...order, itens: items };
-        });
-
-        const ordersWithItems = await Promise.all(orderItemsPromises);
-
-        res.send(ordersWithItems);
-    } catch (error) {
-        console.error('Erro ao buscar pedidos abertos:', error);
-        res.status(500).send({ error: 'Erro ao buscar pedidos abertos' });
+        const orders = await getAllOrders();  // Busca todos os pedidos
+        reply.send(orders);
+    } catch (err) {
+        reply.code(500).send({ error: 'Erro ao buscar os pedidos' });
     }
 });
 
+// Rota para buscar pedidos abertos
+fastify.get('/api/orders/open', async (request, reply) => {
+    try {
+        const orders = await orderModel.getAllOrders();
+        reply.send(orders);
+    } catch (error) {
+        reply.status(500).send({ error: 'Erro ao buscar pedidos abertos' });
+    }
+});
+
+// Rota para atualizar o status do pedido
+fastify.put('/api/orders/:id/status', async (request, reply) => {
+    const { id } = request.params;
+    const { status } = request.body;
+
+    try {
+        const result = await orderModel.updateOrderStatus(id, status);
+        if (result.updated > 0) {
+            reply.send({ success: true });
+        } else {
+            reply.status(404).send({ error: 'Pedido não encontrado' });
+        }
+    } catch (error) {
+        reply.status(500).send({ error: 'Erro ao atualizar o status do pedido' });
+    }
+});
 
 async function start() {
     try {

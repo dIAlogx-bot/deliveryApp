@@ -3,79 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedidos Abertos</title>
+    <title>Lista de Pedidos</title>
+    <link rel="stylesheet" href="/css/inicio.css">
     <style>
-        /* Estilos aqui */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #0046BE;
+            color: #ffffff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #0033A0 3px solid;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            padding-bottom: 20px;
+        }
+        .order-section {
+            margin-bottom: 40px;
+        }
+        .order-section h2 {
+            background: #0033A0;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .order-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .order-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .order-card h3 {
+            color: #0046BE;
+            margin-top: 0;
+        }
+        .order-card p {
+            color: #666;
+            margin: 5px 0;
+        }
+        .order-card select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            color: #333;
+        }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Pedidos Abertos</h1>
-        <div id="pedidos-container">
-            <!-- Os pedidos serão carregados aqui -->
-        </div>
-    </div>
-
     <script>
-        async function loadOrders() {
+        async function fetchAndDisplayOrders() {
             try {
                 const response = await fetch('/api/orders/open');
                 const orders = await response.json();
 
-                const pedidosContainer = document.getElementById('pedidos-container');
-                pedidosContainer.innerHTML = '';
+                const abertoGrid = document.getElementById('pedidos-aberto');
+                const aceitoGrid = document.getElementById('pedidos-aceito');
+                const producaoGrid = document.getElementById('pedidos-producao');
+                const entregaGrid = document.getElementById('pedidos-entrega');
+                const concluidoGrid = document.getElementById('pedidos-concluido');
+
+                // Limpa o conteúdo existente
+                abertoGrid.innerHTML = '';
+                aceitoGrid.innerHTML = '';
+                producaoGrid.innerHTML = '';
+                entregaGrid.innerHTML = '';
+                concluidoGrid.innerHTML = '';
 
                 orders.forEach(order => {
-                    const orderItem = document.createElement('div');
-                    orderItem.classList.add('pedido-item');
-
-                    const orderDetails = `
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'order-card';
+                   
+                    orderCard.innerHTML = `
                         <h3>Pedido #${order.id}</h3>
-                        <p>Cliente: ${order.clienteNome} - ${order.clienteTelefone}</p>
-                        <p>Itens: ${order.itens.map(item => item.nome).join(', ')}</p>
-                        <p>Valor Total: R$ ${order.totalValue.toFixed(2)}</p>
-                        <label>Status:</label>
-                        <select data-order-id="${order.id}" class="order-status">
-                            <option value="Pedido Aberto" ${order.status === 'Pedido Aberto' ? 'selected' : ''}>Pedido Aberto</option>
-                            <option value="Pedido em Produção" ${order.status === 'Pedido em Produção' ? 'selected' : ''}>Pedido em Produção</option>
-                            <option value="Saiu para Entrega" ${order.status === 'Saiu para Entrega' ? 'selected' : ''}>Saiu para Entrega</option>
-                            <option value="Pedido Concluído" ${order.status === 'Pedido Concluído' ? 'selected' : ''}>Pedido Concluído</option>
+                        <p>Cliente: ${order.first_name} ${order.last_name} - ${order.phone}</p>                        
+                        <p>Itens: ${order.itens}</p>
+                        <p>Observação: ${order.note}</p>
+                        <p>Total: R$ ${order.total_value.toFixed(2)}</p>
+                        <label for="status-${order.id}">Status:</label>
+                        <select id="status-${order.id}" onchange="updateOrderStatus(${order.id}, this.value)">
+                            <option value="Pedido Aberto" ${order.order_status === 'Pedido Aberto' ? 'selected' : ''}>Pedido Aberto</option>
+                            <option value="Pedido Aceito" ${order.order_status === 'Pedido Aceito' ? 'selected' : ''}>Pedido Aceito</option>
+                            <option value="Pedido em Produção" ${order.order_status === 'Pedido em Produção' ? 'selected' : ''}>Pedido em Produção</option>
+                            <option value="Saiu para Entrega" ${order.order_status === 'Saiu para Entrega' ? 'selected' : ''}>Saiu para Entrega</option>
+                            <option value="Pedido Concluído" ${order.order_status === 'Pedido Concluído' ? 'selected' : ''}>Pedido Concluído</option>
                         </select>
                     `;
 
-                    orderItem.innerHTML = orderDetails;
-                    pedidosContainer.appendChild(orderItem);
+                    // Adiciona o pedido à coluna correspondente
+                    switch (order.order_status) {
+                        case 'Pedido Aberto':
+                            abertoGrid.appendChild(orderCard);
+                            break;
+                        case 'Pedido Aceito':
+                            aceitoGrid.appendChild(orderCard);
+                            break;
+                        case 'Pedido em Produção':
+                            producaoGrid.appendChild(orderCard);
+                            break;
+                        case 'Saiu para Entrega':
+                            entregaGrid.appendChild(orderCard);
+                            break;
+                        case 'Pedido Concluído':
+                            concluidoGrid.appendChild(orderCard);
+                            break;
+                    }
                 });
-
-                // Adiciona listener para mudar status
-                document.querySelectorAll('.order-status').forEach(select => {
-                    select.addEventListener('change', updateOrderStatus);
-                });
-
             } catch (error) {
-                console.error('Erro ao carregar pedidos:', error);
+                console.error('Erro ao buscar pedidos:', error);
             }
         }
 
-        async function updateOrderStatus(event) {
-            const select = event.target;
-            const orderId = select.dataset.orderId;
-            const newStatus = select.value;
-
-            try {
-                await fetch(`/api/orders/${orderId}/status`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                alert('Status atualizado com sucesso!');
-            } catch (error) {
-                console.error('Erro ao atualizar status:', error);
-            }
+        function updateOrderStatus(orderId, newStatus) {
+            fetch(`/api/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchAndDisplayOrders();
+                } else {
+                    alert('Erro ao atualizar o status do pedido.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao conectar com o servidor:', error);
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', loadOrders);
+        window.onload = function() {
+            fetchAndDisplayOrders();
+            setInterval(fetchAndDisplayOrders, 30000); // Atualiza a cada 30 segundos
+        };
     </script>
+</head>
+<body>
+    <header>
+        <h1>Lista de Pedidos</h1>
+        <a href="/dashboard" class="inicio-btn">Início</a>
+    </header>
+
+    <div class="container">
+        <div class="order-section">
+            <h2>Pedidos em Aberto</h2>
+            <div id="pedidos-aberto" class="order-grid"></div>
+        </div>
+
+        <div class="order-section">
+            <h2>Pedidos Aceitos</h2>
+            <div id="pedidos-aceito" class="order-grid"></div>
+        </div>
+
+        <div class="order-section">
+            <h2>Pedidos em Produção</h2>
+            <div id="pedidos-producao" class="order-grid"></div>
+        </div>
+
+        <div class="order-section">
+            <h2>Saiu para Entrega</h2>
+            <div id="pedidos-entrega" class="order-grid"></div>
+        </div>
+
+        <div class="order-section">
+            <h2>Pedidos Concluídos</h2>
+            <div id="pedidos-concluido" class="order-grid"></div>
+        </div>
+    </div>
 </body>
 </html>
