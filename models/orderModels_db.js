@@ -1,15 +1,16 @@
 // models/orderModels_db.js
 
 const db = require('../db');
-
+const moment = require('moment-timezone');
 
 // Função para criar um novo pedido
 async function createOrder(orderData) {
     const { cliente_id, total, observacao, status } = orderData;
+    const bahiaTime = moment().tz('America/Bahia').format('YYYY-MM-DD HH:mm:ss');
     const result = await new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO orders (client_id, total_value, order_status, note) VALUES (?, ?, ?, ?)`,
-            [cliente_id, total, status, observacao],
+            `INSERT INTO orders (client_id, total_value, order_time, order_status, note) VALUES (?, ?, ?, ?, ?)`,
+            [cliente_id, total, bahiaTime, status, observacao],
             function (err) {
                 if (err) {
                     return reject(err);
@@ -62,11 +63,11 @@ async function getOpenOrders() {
     });
 }
 
-// Função para buscar Todos pedidos difernte de Pedido Concluído
+// Função para buscar Todos pedidos 
 async function getAllOrders() {
     return new Promise((resolve, reject) => {
         const query = `
-            SELECT o.id, o.client_id, o.total_value, o.order_status, o.note, c.first_name, c.last_name, c.phone,
+            SELECT o.id, o.client_id, o.total_value, o.order_time, o.order_status, o.note, c.first_name, c.last_name, c.phone,
                    GROUP_CONCAT(p.nome || ' (Qtd: ' || oi.quantity || ')') AS itens
             FROM orders o
             JOIN clients c ON o.client_id = c.id

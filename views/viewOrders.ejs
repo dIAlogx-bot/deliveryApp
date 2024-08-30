@@ -90,12 +90,22 @@
                 concluidoGrid.innerHTML = '';
 
                 orders.forEach(order => {
+                    
+                    // Separar data e hora
+                    const [date, time] = order.order_time.split(' ');
+                    const [year, month, day] = date.split('-');
+                    const formattedDate = `${day}/${month}/${year}`;
+                    
+                    
                     const orderCard = document.createElement('div');
                     orderCard.className = 'order-card';
                    
                     orderCard.innerHTML = `
                         <h3>Pedido #${order.id}</h3>
-                        <p>Cliente: ${order.first_name} ${order.last_name} - ${order.phone}</p>                        
+                        <p>Cliente: ${order.first_name} ${order.last_name}</p>
+                        <p>Telefone: ${order.phone}</p>
+                        <p>Data do Pedido: ${formattedDate}</p>
+                        <p>Hora do Pedido: ${time}</p>                      
                         <p>Itens: ${order.itens}</p>
                         <p>Observação: ${order.note}</p>
                         <p>Total: R$ ${order.total_value.toFixed(2)}</p>
