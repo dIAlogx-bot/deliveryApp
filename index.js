@@ -7,6 +7,7 @@ const clientsDb = require('./models/clientsModel_db');
 const orderModel = require('./models/orderModels_db');
 const ejs = require("ejs")
 const fastifyView = require("@fastify/view")
+const fastifyStatic = require('@fastify/static');
 
 const fastifySession = require('@fastify/session');
 const fastifyCookie = require('@fastify/cookie');
@@ -26,7 +27,11 @@ fastify.register(fastifyView, {
     root: path.join(__dirname, 'views'), // Diretório onde seus arquivos .ejs estão localizados
   });
 
-
+// Serve arquivos estáticos da pasta 'public'
+fastify.register(fastifyStatic, {
+    root: path.join(__dirname, 'public'),
+    prefix: '/public/', // Opcional, mas ajuda a definir um prefixo
+});
 
 fastify.register(require('@fastify/formbody'));
 fastify.register(require('@fastify/cors'));

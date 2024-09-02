@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/menuDropdown/dropdown.css">
     <title>Lista de Pedidos</title>
-    <link rel="stylesheet" href="/css/inicio.css">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,14 +21,7 @@
             overflow: hidden;
             padding: 20px;
         }
-        header {
-            background: #0046BE;
-            color: #ffffff;
-            padding-top: 30px;
-            min-height: 70px;
-            border-bottom: #0033A0 3px solid;
-            text-align: center;
-        }
+                
         header h1 {
             margin: 0;
             padding-bottom: 20px;
@@ -170,12 +164,17 @@
         };
     </script>
 </head>
-<body>
-    <header>
-        <h1>Lista de Pedidos</h1>
-        <a href="/dashboard" class="inicio-btn">Início</a>
-    </header>
 
+<header>
+    <%- include('partials/dropdown') %>
+
+    <h1>Lista de Pedidos</h1>
+</header>
+
+<body>
+    
+    
+    
     <div class="container">
         <div class="order-section">
             <h2>Pedidos em Aberto</h2>
@@ -202,5 +201,7 @@
             <div id="pedidos-concluido" class="order-grid"></div>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/public/menuDropdown/dropdown.js"></script>
 </body>
 </html>

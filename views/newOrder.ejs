@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/menuDropdown/dropdown.css">
     <title>Novo Pedido</title>
     <style>
         body {
@@ -20,13 +21,7 @@
             overflow: hidden;
             padding: 20px;
         }
-        header {
-            background: #0046BE;
-            color: #ffffff;
-            padding-top: 30px;
-            min-height: 70px;
-            border-bottom: #0033A0 3px solid;
-        }
+        
         header h1 {
             margin: 0;
             text-align: center;
@@ -110,12 +105,15 @@
         }
     </style>
 </head>
+
+<header>
+    <%- include('partials/dropdown') %>
+
+    <h1>Novo Pedido</h1>
+</header>
 <body>
-    <header>
-        <div class="container">
-            <h1>Novo Pedido</h1>
-        </div>
-    </header>
+
+    
 
     <div class="container">
         <div class="menu">
@@ -355,5 +353,7 @@
             updateTotalValue(); // Inicialize o valor total ao carregar a página
         });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/public/menuDropdown/dropdown.js"></script>
 </body>
 </html>
