@@ -5,6 +5,7 @@ const db = require('./db');
 const productsDb = require('./models/productsModel_db');
 const clientsDb = require('./models/clientsModel_db');
 const orderModel = require('./models/orderModels_db');
+const categoriesDb = require('./models/categoriesModel_db');
 const ejs = require("ejs")
 const fastifyView = require("@fastify/view")
 const fastifyStatic = require('@fastify/static');
@@ -137,10 +138,12 @@ fastify.get('/addProduct', (request, reply) => {
 
 // API para adicionar um novo produto
 fastify.post('/api/products', async (request, reply) => {
-    const { nome, descricao, preco, disponibilidade } = request.body;
+    const { nome, descricao, preco, disponibilidade, categoria } = request.body;
     
     try {
-      const id = await productsDb.addProduct(nome, descricao, parseFloat(preco), disponibilidade);
+      const id = await productsDb.addProduct(nome, descricao, parseFloat(preco), disponibilidade, categoria);
+      console.log('Disponibilidade: ',disponibilidade);
+      console.log('Categoria: ',categoria);
       reply.code(201).send({ id, message: 'Produto adicionado com sucesso' });
     } catch (error) {
       console.error("Erro ao adicionar produto:", error);
@@ -168,16 +171,21 @@ fastify.delete('/api/products/:id', async (request, reply) => {
 // API para atualizar um produto
 fastify.put('/api/products/:id', async (request, reply) => {
     const { id } = request.params;
-    const { nome, descricao, preco, disponibilidade } = request.body;    
+    const { nome, descricao, preco, disponibilidade, categoria } = request.body;    
     try {
-        const result = await productsDb.updateProduct(id, nome, descricao, parseFloat(preco), disponibilidade);
+        const result = await productsDb.updateProduct(id, nome, descricao, parseFloat(preco), disponibilidade, categoria);
         if (result > 0) {
             return reply.send({ message: 'Produto atualizado com sucesso' }); // Certifique-se de usar `return`
         } else {
             return reply.code(404).send({ error: 'Produto não encontrado' });
         }
     } catch (error) {
-        return reply.code(500).send({ error: 'Erro interno do servidor' });
+        console.log('Nome: ', nome);
+        console.log('Decrição: ', descricao);
+        console.log('Preço: ', preco);
+        console.log('Disponibilidade: ', disponibilidade);
+        console.log('Categoria: ', categoria);
+        return reply.code(500).send({ error: 'Erro interno do servidor' });        
     }
 });
 
@@ -221,6 +229,17 @@ fastify.get('/api/clients', async (request, reply) => {
       return clients;
     } catch (error) {
       console.error("Erro ao obter clientes:", error);
+      reply.code(500).send({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // API para obter todas as categorias
+fastify.get('/api/categories', async (request, reply) => {
+    try {
+      const categories = await categoriesDb.getAllCategories();
+      return categories;
+    } catch (error) {
+      console.error("Erro ao obter categoria:", error);
       reply.code(500).send({ error: "Erro interno do servidor" });
     }
   });

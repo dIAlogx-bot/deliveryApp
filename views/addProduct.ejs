@@ -116,6 +116,13 @@
                 <textarea id="descricao" name="descricao" rows="3"></textarea>
             </div>
             <div class="form-group">
+                <label for="categoria">Categoria:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">Selecione a Categoria</option>
+                    <!-- Aqui você irá popular a lista de categoria -->
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="preco">Preço:</label>
                 <input type="number" id="preco" name="preco" step="0.01" required>
             </div>
@@ -152,7 +159,7 @@
                 });
 
                 if (response.ok) {
-                    showMessage('Produto adicionado com sucesso!', 'success');
+                    showMessage('Produto adicionado com sucesso!', 'success');                    
                     e.target.reset(); // Limpa o formulário
                 } else {
                     const errorData = await response.json();
@@ -162,6 +169,26 @@
                 showMessage('Erro ao conectar com o servidor', 'error');
             }
         });
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const categories = await response.json();
+
+                const categoriesSelect = document.getElementById('categoria');
+                categoriesSelect.innerHTML = '<option value="">Selecione a Categoria</option>';
+
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.categoria;
+                    option.textContent = `${category.categoria}`;
+                    categoriesSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao obter categorias:', error);
+                showMessage('Erro ao obter a lista de categorias', 'error');
+            }
+        }
 
         function showMessage(text, type) {
             const messageElement = document.getElementById('message');
@@ -173,6 +200,9 @@
                 messageElement.style.display = 'none';
             }, 5000);
         }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();            
+        });
     </script>
 </body>
 </html>

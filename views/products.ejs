@@ -85,6 +85,7 @@
                     productCard.innerHTML = `
                         <h3>${product.nome}</h3>
                         <p>${product.descricao || 'Sem descrição'}</p>
+                        <p>${product.categoria}</p>
                         <p class="price">R$ ${product.preco.toFixed(2)}</p>
                         <p class="availability">Disponível: ${product.disponibilidade === 1 ? 'Sim' : 'Não'}</p>
                         <button onclick="updateProduct(${product.id})">Atualizar</button>

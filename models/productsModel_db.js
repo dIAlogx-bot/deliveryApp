@@ -13,11 +13,10 @@ function getAllProducts() {
   });
 }
 
-function addProduct(nome, descricao, preco, disponibilidade) {
+function addProduct(nome, descricao, preco, disponibilidade, categoria) {
   return new Promise((resolve, reject) => {
-    const query = `INSERT INTO products (nome, descricao, preco, disponibilidade) VALUES (?, ?, ?, ?)`;
-    const disponibilidadeValue = disponibilidade === 'sim' ? 1 : 0;
-    db.run(query, [nome, descricao, preco, disponibilidadeValue], function(err) {
+    const query = `INSERT INTO products (nome, descricao, preco, disponibilidade, categoria) VALUES (?, ?, ?, ?, ?)`;    
+    db.run(query, [nome, descricao, preco, disponibilidade, categoria], function(err) {
       if (err) {
         reject(err);
       } else {
@@ -40,11 +39,12 @@ function getProductById(id) {
   });
 }
 
-function updateProduct(id, nome, descricao, preco, disponibilidade) {
+//Função para atualizar o produto
+function updateProduct(id, nome, descricao, preco, disponibilidade, categoria) {
   return new Promise((resolve, reject) => {
-    const query = `UPDATE products SET nome = ?, descricao = ?, preco = ?, disponibilidade = ? WHERE id = ?`;
+    const query = `UPDATE products SET nome = ?, descricao = ?, preco = ?, disponibilidade = ?, categoria = ? WHERE id = ?`;
     const disponibilidadeValue = disponibilidade === '1' ? 1 : 0;
-    db.run(query, [nome, descricao, preco, disponibilidadeValue, id], function(err) {
+    db.run(query, [nome, descricao, preco, disponibilidadeValue, categoria, id], function(err) {
       if (err) {
         reject(err);
       } else {
