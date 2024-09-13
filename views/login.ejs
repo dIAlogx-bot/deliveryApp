@@ -8,10 +8,19 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #0046BE;
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+        }
+        .header-top {
+            background: #fff;
+            text-align: center;
+            padding: 0px 0;
+        }
+        .header-logo {
+            width: 120px; /* Tamanho da logo */
+            margin: 0 auto;
         }
         .container {
             width: 80%;
@@ -21,16 +30,19 @@
             padding: 20px;
         }
         header {
-            background: #0046BE;
-            color: #ffffff;
+            background: #ffffff;
+            color: #0046BE;
             padding-top: 30px;
-            min-height: 70px;
+            min-height: 0px;
             border-bottom: #0033A0 3px solid;
-        }
-        header h1 {
-            margin: 0;
-            text-align: center;
-            padding-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }       
+        .container h1 {
+            margin: 0; 
+            text-align: center;          
         }
         form {
             background: #fff;
@@ -86,13 +98,17 @@
     </style>
 </head>
 <body>
-    <header>
+    <div class="header-top">
         <div class="container">
-            <h1>Login</h1>
+            <img class="header-logo" src="https://images.builderservices.io/s/cdn/v1.0/i/m?url=https%3A%2F%2Fstorage.googleapis.com%2Fproduction-hostgator-brasil-v1-0-6%2F716%2F1853716%2F6oyeIHbL%2F80dadd65f1264e8c808325d15ceaa115&methods=resize%2C500%2C5000" alt="Logo da Sua Empresa">
         </div>
+    </div>
+    <header>        
+        
     </header>
 
     <div class="container">
+        <h1>Login</h1>
         <form id="loginForm">
             <div class="form-group">
                 <label for="usuario">Usuário:</label>

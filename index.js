@@ -13,6 +13,7 @@ const fastifyStatic = require('@fastify/static');
 const fastifySession = require('@fastify/session');
 const fastifyCookie = require('@fastify/cookie');
 
+
 // Registro dos plugins de sessão e cookie
 fastify.register(fastifyCookie);
 fastify.register(fastifySession, {
